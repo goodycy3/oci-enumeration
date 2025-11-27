@@ -202,7 +202,7 @@ class OCISecurityScanner:
                 print(f"     Statements:")
                 
                 for stmt in policy.statements:
-                    # Highlight potentially dangerous permissions
+                    
                     if any(danger in stmt.lower() for danger in ['manage', 'all-resources', 'any', 'inspect']):
                         print(f"       {Colors.WARNING}⚠  {stmt}{Colors.ENDC}")
                     else:
