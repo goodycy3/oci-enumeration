@@ -9,7 +9,7 @@
 
 **A professional security testing and IAM assessment tool for Oracle Cloud Infrastructure**
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Command Samples](#examples) • [Documentation](#documentation)
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Command Samples](#CommandSamples) • [Documentation](#documentation)
 
 </div>
 
@@ -47,14 +47,14 @@
 
 ### Security Analysis
 
-- ✅ **Privilege Escalation Detection** - Identifies high-risk policy statements
-- ✅ **Permission Auditing** - Highlights dangerous permissions (`manage`, `all-resources`)
-- ✅ **Severity Classification** - Categorizes findings by risk level (HIGH/MEDIUM)
-- ✅ **Comprehensive Reporting** - Export complete audit results in JSON format
+- **Privilege Escalation Detection** - Identifies high-risk policy statements
+- **Permission Auditing** - Highlights dangerous permissions (`manage`, `all-resources`)
+- **Severity Classification** - Categorizes findings by risk level (HIGH/MEDIUM)
+- **Comprehensive Reporting** - Export complete audit results in JSON format
 
 ---
 
-## 📋 Requirements
+## Requirements
 
 - Python 3.6 or higher
 - OCI Python SDK
@@ -105,7 +105,7 @@ chmod +x oci-enumeration.py
 
 ---
 
-## 💡 Usage
+## Usage
 
 ### Basic Syntax
 
