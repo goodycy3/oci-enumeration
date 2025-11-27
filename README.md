@@ -369,10 +369,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## Authors
-
-https://github.com/r007sec and https://github.com/goodycy3
-
 
 ---
 
@@ -400,10 +396,5 @@ If you find this tool useful, please consider giving it a star! ⭐
 <div align="center">
 
 **Built with ❤️ for the security community**
-
-[![GitHub stars](https://img.shields.io/github/stars/goodycyb3/oci-iam-audit?style=social)](https://github.com/goodycyb3/oci-iam-audit/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/goodycyb3/oci-iam-audit?style=social)](https://github.com/goodycyb3/oci-iam-audit/network/members)
-
-
 
 </div>
