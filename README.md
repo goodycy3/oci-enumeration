@@ -9,7 +9,7 @@
 
 **A professional security testing and IAM assessment tool for Oracle Cloud Infrastructure**
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Examples](#examples) • [Documentation](#documentation)
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Command Samples](#examples) • [Documentation](#documentation)
 
 </div>
 
@@ -152,7 +152,7 @@ python3 oci-enumeration.py [OPTIONS]
 
 ---
 
-## 📚 Examples
+## Command Samples
 
 ### Basic Enumeration
 
@@ -217,7 +217,7 @@ python3 oci-enumeration.py --all --no-banner --output scan_$(date +%Y%m%d).json
 
 ---
 
-## 🔍 Understanding Output
+## Understanding Output
 
 ### Policy Risk Indicators
 
@@ -238,7 +238,7 @@ The tool highlights potentially dangerous permissions:
 
 ---
 
-## 📊 Sample Output
+## Sample Output
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -280,17 +280,17 @@ User Information:
 
 ---
 
-## 🛡️ Security Considerations
+## Security Considerations
 
-### ⚠️ Legal and Ethical Usage
+### Legal and Ethical Usage
 
 **IMPORTANT:** This tool is designed for authorized security testing only.
 
-- ✅ Only use on OCI tenancies you own or have explicit permission to test
-- ✅ Obtain written authorization before conducting security assessments
-- ✅ Follow responsible disclosure practices
-- ✅ Comply with all applicable laws and regulations
-- ❌ Unauthorized access to cloud resources may violate laws (CFAA, GDPR, etc.)
+- Only use on OCI tenancies you own or have explicit permission to test
+- Obtain written authorization before conducting security assessments
+- Follow responsible disclosure practices
+- Comply with all applicable laws and regulations
+- Unauthorized access to cloud resources may violate laws (CFAA, GDPR, etc.)
 
 ### Audit Logging
 
@@ -309,7 +309,7 @@ The tool requires at minimum:
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -343,7 +343,7 @@ python3 oci-enumeration.py --list-bucket exact-bucket-name
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 For detailed documentation, see:
 - [Complete Usage Guide](OCI-ENUMERATION-DOCUMENTATION.md)
@@ -352,7 +352,7 @@ For detailed documentation, see:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -364,20 +364,20 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👥 Authors
+## Authors
 
 https://github.com/r007sec and https://github.com/goodycy3
 
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Oracle Cloud Infrastructure for their comprehensive Python SDK
 - The security research community for best practices and feedback
@@ -385,14 +385,14 @@ https://github.com/r007sec and https://github.com/goodycy3
 
 ---
 
-## 📧 Contact
+## Contact
 
 For questions, issues, or suggestions:
 - Open an issue on GitHub
 
 ---
 
-## ⭐ Star History
+## Star History
 
 If you find this tool useful, please consider giving it a star! ⭐
 
@@ -402,7 +402,7 @@ If you find this tool useful, please consider giving it a star! ⭐
 
 **Built with ❤️ for the security community**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/oci-iam-audit?style=social)](https://github.com/yourusername/oci-iam-audit/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/oci-iam-audit?style=social)](https://github.com/yourusername/oci-iam-audit/network/members)
+[![GitHub stars](https://img.shields.io/github/stars/goodycyb3/oci-iam-audit?style=social)](https://github.com/goodycyb3/oci-iam-audit/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/r007sec/oci-iam-audit?style=social)](https://github.com/r007sec/oci-iam-audit/network/members)
 
 </div>
