@@ -201,7 +201,6 @@ class OCISecurityScanner:
                 print(f"     Statements:")
                 
                 for stmt in policy.statements:
-                    
                     if any(danger in stmt.lower() for danger in ['manage', 'all-resources', 'any', 'inspect']):
                         print(f"       {Colors.WARNING}⚠  {stmt}{Colors.ENDC}")
                     else:
@@ -336,14 +335,20 @@ class OCISecurityScanner:
             
             object_info = []
             for idx, obj in enumerate(objects, 1):
-                size_mb = obj.size / (1024 * 1024)
+                if obj.size is not None:
+                    size_mb = obj.size / (1024 * 1024)
+                    size_display = f"{size_mb:.2f} MB ({obj.size} bytes)"
+                else:
+                    size_display = "Unknown size"
+                
                 print(f"  {idx}. {Colors.BOLD}{obj.name}{Colors.ENDC}")
-                print(f"     Size:     {size_mb:.2f} MB ({obj.size} bytes)")
+                print(f"     Size:     {size_display}")
                 print(f"     Modified: {obj.time_modified}")
                 print()
+                
                 object_info.append({
                     "name": obj.name,
-                    "size": obj.size,
+                    "size": obj.size if obj.size is not None else 0,
                     "modified": str(obj.time_modified)
                 })
             
