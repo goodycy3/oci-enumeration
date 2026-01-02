@@ -4,7 +4,7 @@ OCI IAM Enumeration & Privilege Escalation Tool
 A professional tool for security testing and IAM assessment in Oracle Cloud Infrastructure
 
 Author: Security Research Team
-Version: 1.0.0
+Version: 2.0.0
 License: MIT
 """
 
@@ -15,6 +15,7 @@ import sys
 from typing import Dict, List, Optional
 from datetime import datetime
 import os
+import base64
 
 class Colors:
     HEADER = '\033[95m'
@@ -28,7 +29,6 @@ class Colors:
     UNDERLINE = '\033[4m'
 
 def print_banner():
-    """Print tool banner"""
     banner = f"""
 {Colors.OKCYAN}
     ╔══════════════════════════════════════════════════════════════╗
@@ -57,10 +57,8 @@ def print_banner():
     print(banner)
 
 class OCISecurityScanner:
-    """Main class for OCI security scanning and enumeration"""
     
     def __init__(self, config_file: str = "~/.oci/config", profile: str = "DEFAULT", verbose: bool = False):
-        """Initialize OCI client with configuration"""
         self.verbose = verbose
         self.profile = profile
         self.config_file = os.path.expanduser(config_file)
@@ -69,6 +67,11 @@ class OCISecurityScanner:
             self.config = oci.config.from_file(self.config_file, profile)
             self.identity_client = oci.identity.IdentityClient(self.config)
             self.object_storage_client = oci.object_storage.ObjectStorageClient(self.config)
+            
+            self.vault_client = oci.vault.VaultsClient(self.config)
+            self.secrets_client = oci.secrets.SecretsClient(self.config)
+            self.kms_vault_client = oci.key_management.KmsVaultClient(self.config)
+            
             self.tenancy_id = self.config['tenancy']
             self.user_id = self.config['user']
             
@@ -81,29 +84,23 @@ class OCISecurityScanner:
             sys.exit(1)
 
     def _print_success(self, message: str):
-        """Print success message"""
         print(f"{Colors.OKGREEN}[+]{Colors.ENDC} {message}")
 
     def _print_error(self, message: str):
-        """Print error message"""
         print(f"{Colors.FAIL}[-]{Colors.ENDC} {message}")
 
     def _print_info(self, message: str):
-        """Print info message"""
         print(f"{Colors.OKBLUE}[*]{Colors.ENDC} {message}")
 
     def _print_warning(self, message: str):
-        """Print warning message"""
         print(f"{Colors.WARNING}[!]{Colors.ENDC} {message}")
 
     def _print_header(self, message: str):
-        """Print section header"""
         print(f"\n{Colors.BOLD}{Colors.HEADER}{'='*70}{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.HEADER}{message:^70}{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.HEADER}{'='*70}{Colors.ENDC}\n")
 
     def enumerate_current_user(self) -> Optional[Dict]:
-        """Enumerate current user identity"""
         self._print_header("CURRENT USER IDENTITY")
         
         try:
@@ -123,7 +120,6 @@ class OCISecurityScanner:
             return None
 
     def enumerate_groups(self) -> List:
-        """Enumerate all groups in tenancy"""
         self._print_header("GROUP ENUMERATION")
         
         try:
@@ -148,7 +144,6 @@ class OCISecurityScanner:
             return []
 
     def enumerate_user_groups(self) -> List:
-        """Enumerate groups that current user belongs to"""
         self._print_header("USER GROUP MEMBERSHIPS")
         
         try:
@@ -181,7 +176,6 @@ class OCISecurityScanner:
             return []
 
     def enumerate_policies(self) -> List:
-        """Enumerate IAM policies"""
         self._print_header("IAM POLICY ENUMERATION")
         
         try:
@@ -219,14 +213,10 @@ class OCISecurityScanner:
             return []
 
     def enumerate_compartments(self) -> List:
-        """Enumerate compartments"""
         self._print_header("COMPARTMENT ENUMERATION")
         
         try:
-            compartments = self.identity_client.list_compartments(
-                self.tenancy_id,
-                compartment_id_in_subtree=True
-            ).data
+            compartments = self.identity_client.list_compartments(self.tenancy_id).data
             
             if not compartments:
                 self._print_warning("No compartments found")
@@ -234,26 +224,203 @@ class OCISecurityScanner:
             
             self._print_success(f"Found {len(compartments)} compartments:\n")
             
-            compartment_info = []
             for idx, comp in enumerate(compartments, 1):
                 print(f"  {idx}. {Colors.BOLD}{comp.name}{Colors.ENDC}")
                 print(f"     OCID:        {comp.id}")
                 print(f"     Description: {comp.description if comp.description else 'N/A'}")
                 print(f"     Status:      {comp.lifecycle_state}")
                 print()
-                compartment_info.append({
-                    "name": comp.name,
-                    "id": comp.id,
-                    "state": comp.lifecycle_state
-                })
             
-            return compartment_info
+            return [c.__dict__ for c in compartments]
         except Exception as e:
             self._print_error(f"Failed to enumerate compartments: {e}")
             return []
 
+    def enumerate_vaults(self, compartment_id: Optional[str] = None) -> List:
+        self._print_header("VAULT ENUMERATION")
+        
+        vaults_info = {}
+        compartments_to_check = []
+        
+        if compartment_id:
+            compartments_to_check = [{"id": compartment_id, "name": "Specified"}]
+        else:
+            try:
+                comps = self.identity_client.list_compartments(self.tenancy_id).data
+                compartments_to_check = [{"id": c.id, "name": c.name} for c in comps]
+                compartments_to_check.append({"id": self.tenancy_id, "name": "Root (Tenancy)"})
+            except Exception as e:
+                self._print_error(f"Failed to list compartments: {e}")
+                return []
+        
+        for comp in compartments_to_check:
+            try:
+                kms_vaults = self.kms_vault_client.list_vaults(comp["id"]).data
+                for v in kms_vaults:
+                    vaults_info[v.id] = {
+                        "name": v.display_name,
+                        "id": v.id,
+                        "source": "KMS Management",
+                        "state": v.lifecycle_state
+                    }
+            except Exception as e:
+                if self.verbose:
+                    self._print_error(f"KMS lookup failed in {comp['name']}")
+
+            try:
+                secret_vaults = self.vault_client.list_vaults(comp["id"]).data
+                for v in secret_vaults:
+                    if v.id not in vaults_info:
+                        vaults_info[v.id] = {
+                            "name": v.display_name,
+                            "id": v.id,
+                            "source": "Vault Service",
+                            "state": v.lifecycle_state
+                        }
+            except Exception as e:
+                if self.verbose:
+                    self._print_error(f"Vault service lookup failed in {comp['name']}")
+
+        if not vaults_info:
+            self._print_warning("No accessible vaults found")
+        else:
+            self._print_success(f"Found {len(vaults_info)} unique accessible vault(s):")
+            for idx, (vid, info) in enumerate(vaults_info.items(), 1):
+                print(f"  {idx}. {Colors.BOLD}{info['name']}{Colors.ENDC}")
+                print(f"     OCID:   {vid}")
+                print(f"     Source: {info['source']}")
+                print(f"     Status: {info['state']}\n")
+        
+        return list(vaults_info.values())
+
+    def enumerate_secrets(self, compartment_id: Optional[str] = None, vault_id: Optional[str] = None) -> List:
+        self._print_header("SECRET ENUMERATION")
+        
+        secrets_info = []
+        compartments_to_check = []
+        
+        if compartment_id:
+            compartments_to_check = [{"id": compartment_id, "name": "Specified"}]
+        else:
+            try:
+                comps = self.identity_client.list_compartments(self.tenancy_id).data
+                compartments_to_check = [{"id": c.id, "name": c.name} for c in comps]
+                compartments_to_check.append({"id": self.tenancy_id, "name": "Root (Tenancy)"})
+            except Exception as e:
+                self._print_error(f"Failed to list compartments: {e}")
+                return []
+        
+        total_secrets = 0
+        
+        for comp in compartments_to_check:
+            try:
+                list_secrets_kwargs = {"compartment_id": comp["id"]}
+                if vault_id:
+                    list_secrets_kwargs["vault_id"] = vault_id
+                
+                secrets = self.vault_client.list_secrets(**list_secrets_kwargs).data
+                
+                if secrets:
+                    print(f"{Colors.OKCYAN}Compartment: {Colors.BOLD}{comp['name']}{Colors.ENDC}\n")
+                    
+                    for idx, secret in enumerate(secrets, 1):
+                        total_secrets += 1
+                        print(f"  {idx}. {Colors.BOLD}{secret.secret_name}{Colors.ENDC}")
+                        print(f"     OCID:         {secret.id}")
+                        print(f"     Vault ID:     {secret.vault_id}")
+                        print(f"     Status:       {secret.lifecycle_state}")
+                        
+                        if hasattr(secret, 'description') and secret.description:
+                            print(f"     Description:  {secret.description}")
+                        
+                        if hasattr(secret, 'time_created'):
+                            print(f"     Created:      {secret.time_created}")
+                        
+                        if hasattr(secret, 'time_of_current_version_expiry') and secret.time_of_current_version_expiry:
+                            print(f"     Expires:      {secret.time_of_current_version_expiry}")
+                        
+                        print()
+                        
+                        secrets_info.append({
+                            "name": secret.secret_name,
+                            "id": secret.id,
+                            "vault_id": secret.vault_id,
+                            "compartment": comp["name"],
+                            "compartment_id": comp["id"],
+                            "state": secret.lifecycle_state,
+                            "description": secret.description if hasattr(secret, 'description') else None
+                        })
+            except Exception as e:
+                if self.verbose:
+                    self._print_error(f"Failed to list secrets in {comp['name']}: {e}")
+        
+        if total_secrets == 0:
+            self._print_warning("No accessible secrets found")
+        else:
+            self._print_success(f"Found {total_secrets} accessible secret(s)")
+        
+        return secrets_info
+
+    def get_secret_value(self, secret_id: str, output_file: Optional[str] = None) -> Optional[Dict]:
+        self._print_header(f"RETRIEVING SECRET VALUE")
+        
+        try:
+            self._print_info(f"Attempting to retrieve secret: {secret_id}")
+            
+            secret_bundle = self.secrets_client.get_secret_bundle(secret_id).data
+            
+            secret_data = {
+                "secret_id": secret_id,
+                "version_number": secret_bundle.version_number,
+                "time_created": str(secret_bundle.time_created) if hasattr(secret_bundle, 'time_created') else None,
+                "stages": secret_bundle.stages if hasattr(secret_bundle, 'stages') else None
+            }
+            
+            if hasattr(secret_bundle, 'secret_bundle_content'):
+                content = secret_bundle.secret_bundle_content
+                
+                if hasattr(content, 'content_type'):
+                    secret_data["content_type"] = content.content_type
+                
+                if hasattr(content, 'content'):
+                    try:
+                        decoded_content = base64.b64decode(content.content).decode('utf-8')
+                        secret_data["content"] = decoded_content
+                        
+                        print(f"\n{Colors.OKGREEN}Secret retrieved successfully!{Colors.ENDC}\n")
+                        print(f"{Colors.OKCYAN}Secret Details:{Colors.ENDC}")
+                        print(f"  Secret ID:       {secret_id}")
+                        print(f"  Version:         {secret_bundle.version_number}")
+                        print(f"  Content Type:    {secret_data.get('content_type', 'N/A')}")
+                        print(f"\n{Colors.WARNING}Secret Content:{Colors.ENDC}")
+                        print(f"  {decoded_content}")
+                        print()
+                        
+                        if output_file:
+                            with open(output_file, 'w') as f:
+                                f.write(decoded_content)
+                            self._print_success(f"Secret content saved to '{output_file}'")
+                        
+                    except Exception as decode_error:
+                        self._print_warning(f"Could not decode secret as UTF-8: {decode_error}")
+                        secret_data["content_base64"] = content.content
+                        print(f"  Base64 Content: {content.content}")
+            
+            return secret_data
+            
+        except oci.exceptions.ServiceError as e:
+            if e.status == 404:
+                self._print_error(f"Secret not found: {secret_id}")
+            elif e.status == 401 or e.status == 403:
+                self._print_error(f"Access denied: Insufficient permissions to read secret")
+            else:
+                self._print_error(f"Service error: {e.message}")
+            return None
+        except Exception as e:
+            self._print_error(f"Failed to retrieve secret: {e}")
+            return None
+
     def enumerate_resources(self, compartment_id: Optional[str] = None) -> Dict:
-        """Enumerate accessible resources (buckets, compute, etc)"""
         self._print_header("RESOURCE ENUMERATION")
         
         resources = {
@@ -311,7 +478,6 @@ class OCISecurityScanner:
         return resources
 
     def list_bucket_objects(self, bucket_name: str, namespace: Optional[str] = None) -> List:
-        """List objects in a specific bucket"""
         self._print_header(f"LISTING OBJECTS IN BUCKET: {bucket_name}")
         
         if not namespace:
@@ -358,7 +524,6 @@ class OCISecurityScanner:
             return []
 
     def download_object(self, bucket_name: str, object_name: str, destination: str, namespace: Optional[str] = None) -> bool:
-        """Download an object from a bucket"""
         self._print_info(f"Attempting to download '{object_name}' from '{bucket_name}'...")
         
         if not namespace:
@@ -386,7 +551,6 @@ class OCISecurityScanner:
             return False
 
     def analyze_privilege_escalation(self, policies: List) -> None:
-        """Analyze policies for privilege escalation vectors"""
         self._print_header("PRIVILEGE ESCALATION ANALYSIS")
         
         dangerous_patterns = {
@@ -394,6 +558,9 @@ class OCISecurityScanner:
             "all-resources": "Access to all resources",
             "any {": "Conditional wildcard access",
             "use secret": "Secrets access",
+            "read secret": "Secret read access",
+            "manage secret": "Secret management access",
+            "manage vaults": "Vault management access",
             "manage users": "User management",
             "manage groups": "Group management",
             "manage policies": "Policy management",
@@ -407,11 +574,18 @@ class OCISecurityScanner:
                 stmt_lower = stmt.lower()
                 for pattern, description in dangerous_patterns.items():
                     if pattern in stmt_lower:
+                        if pattern in ["manage", "all-resources", "manage vaults", "manage secret"]:
+                            severity = "HIGH"
+                        elif pattern in ["use secret", "read secret", "manage users", "manage groups", "manage policies"]:
+                            severity = "MEDIUM"
+                        else:
+                            severity = "LOW"
+                        
                         findings.append({
                             "policy": policy["name"],
                             "statement": stmt,
                             "risk": description,
-                            "severity": "HIGH" if pattern in ["manage", "all-resources"] else "MEDIUM"
+                            "severity": severity
                         })
         
         if not findings:
@@ -421,14 +595,19 @@ class OCISecurityScanner:
         self._print_warning(f"Found {len(findings)} potential privilege escalation vector(s):\n")
         
         for idx, finding in enumerate(findings, 1):
-            severity_color = Colors.FAIL if finding["severity"] == "HIGH" else Colors.WARNING
+            if finding["severity"] == "HIGH":
+                severity_color = Colors.FAIL
+            elif finding["severity"] == "MEDIUM":
+                severity_color = Colors.WARNING
+            else:
+                severity_color = Colors.OKBLUE
+                
             print(f"  {idx}. [{severity_color}{finding['severity']}{Colors.ENDC}] {finding['policy']}")
             print(f"     Risk:      {finding['risk']}")
             print(f"     Statement: {finding['statement']}")
             print()
 
     def export_results(self, results: Dict, filename: str = "oci_enum_results.json"):
-        """Export enumeration results to JSON file"""
         try:
             results["timestamp"] = datetime.now().isoformat()
             results["profile"] = self.profile
@@ -447,34 +626,19 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Enumerate current user
   %(prog)s --user
-  
-  # Enumerate groups
   %(prog)s --groups
-  
-  # Enumerate user's group memberships
   %(prog)s --user-groups
-  
-  # Enumerate policies
   %(prog)s --policies
-  
-  # Enumerate accessible resources
   %(prog)s --resources
-  
-  # Analyze privilege escalation vectors
+  %(prog)s --vaults
+  %(prog)s --secrets
+  %(prog)s --get-secret ocid1.vaultsecret.oc1...
+  %(prog)s --get-secret ocid1.vaultsecret.oc1... --secret-output secret.txt
   %(prog)s --escalation
-  
-  # Full enumeration
   %(prog)s --all
-  
-  # List objects in a specific bucket
   %(prog)s --list-bucket sensitive-data-bucket
-  
-  # Download object from bucket
   %(prog)s --download sensitive-data-bucket flag.txt output.txt
-  
-  # Use specific profile and export results
   %(prog)s --all --profile junior-dev --output results.json
         """
     )
@@ -499,7 +663,19 @@ Examples:
     enum_group.add_argument('--compartments', action='store_true',
                           help='Enumerate compartments')
     enum_group.add_argument('-a', '--all', action='store_true',
-                          help='Perform full enumeration')
+                          help='Perform full enumeration (including vaults and secrets)')
+    
+    vault_group = parser.add_argument_group('Vault & Secrets Options')
+    vault_group.add_argument('--vaults', action='store_true',
+                           help='Enumerate OCI Vaults')
+    vault_group.add_argument('--secrets', action='store_true',
+                           help='Enumerate secrets in vaults')
+    vault_group.add_argument('--get-secret', metavar='SECRET_ID',
+                           help='Retrieve value of a specific secret by OCID')
+    vault_group.add_argument('--secret-output', metavar='FILE',
+                           help='Save secret value to file (use with --get-secret)')
+    vault_group.add_argument('--vault-id', metavar='VAULT_ID',
+                           help='Filter secrets by specific vault OCID')
     
     analysis_group = parser.add_argument_group('Analysis Options')
     analysis_group.add_argument('-e', '--escalation', action='store_true',
@@ -524,7 +700,8 @@ Examples:
     action_flags = [
         args.all, args.user, args.groups, args.user_groups,
         args.policies, args.compartments, args.resources,
-        args.escalation, args.list_bucket, args.download
+        args.escalation, args.list_bucket, args.download,
+        args.vaults, args.secrets, args.get_secret
     ]
     
     if not any(action_flags):
@@ -552,6 +729,8 @@ Examples:
         results["policies"] = scanner.enumerate_policies()
         results["compartments"] = scanner.enumerate_compartments()
         results["resources"] = scanner.enumerate_resources()
+        results["vaults"] = scanner.enumerate_vaults()
+        results["secrets"] = scanner.enumerate_secrets()
         
         if results["policies"]:
             scanner.analyze_privilege_escalation(results["policies"])
@@ -574,10 +753,21 @@ Examples:
         if args.resources:
             results["resources"] = scanner.enumerate_resources()
         
+        if args.vaults:
+            results["vaults"] = scanner.enumerate_vaults()
+        
+        if args.secrets:
+            results["secrets"] = scanner.enumerate_secrets(vault_id=args.vault_id)
+        
         if args.escalation:
             if not results.get("policies"):
                 results["policies"] = scanner.enumerate_policies()
             scanner.analyze_privilege_escalation(results["policies"])
+    
+    if args.get_secret:
+        secret_value = scanner.get_secret_value(args.get_secret, args.secret_output)
+        if secret_value:
+            results["retrieved_secret"] = secret_value
     
     if args.list_bucket:
         results["bucket_objects"] = scanner.list_bucket_objects(args.list_bucket)
