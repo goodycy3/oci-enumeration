@@ -181,7 +181,7 @@ python3 oci-enumeration.py --policies
 python3 oci-enumeration.py --vaults
 ```
 
-#### Enumerate all secrets across all vaults
+#### Enumerate secret in a vault
 ```bash
 python3 oci-enumeration.py --secrets --vault-id <OCI-VAULT-ID>
 ```
