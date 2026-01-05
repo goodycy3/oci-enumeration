@@ -1,15 +1,15 @@
-# OCI-IAM-AUDIT
+# OCI-HUNTER
 
 <div align="center">
 
-![OCI-IAM-AUDIT Banner](https://img.shields.io/badge/OCI-IAM--AUDIT-orange?style=for-the-badge&logo=oracle)
+![OCI-HUNTER Banner](https://img.shields.io/badge/OCI-HUNTER-orange?style=for-the-badge&logo=oracle)
 [![Python Version](https://img.shields.io/badge/python-3.6%2B-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 [![OCI SDK](https://img.shields.io/badge/OCI%20SDK-2.126.4-red?style=for-the-badge)](https://pypi.org/project/oci/)
 
-**A professional security testing and IAM assessment tool for Oracle Cloud Infrastructure**
+**A professional security testing and assessment tool for Oracle Cloud Infrastructure**
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Command Samples](#Command-Samples) • [Documentation](#documentation)
+[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Command Samples](#command-samples) • [Documentation](#documentation)
 
 </div>
 
@@ -17,7 +17,7 @@
 
 ## Overview
 
-**OCI-IAM-AUDIT** is a comprehensive enumeration and security assessment tool designed for Oracle Cloud Infrastructure (OCI) environments. It helps security professionals, penetration testers, and cloud administrators identify IAM misconfigurations, enumerate resources, and assess potential privilege escalation vectors.
+**OCI-HUNTER** is a comprehensive enumeration and security assessment tool designed for Oracle Cloud Infrastructure (OCI) environments. It helps security professionals, penetration testers, and cloud administrators identify IAM misconfigurations, enumerate resources, and assess potential privilege escalation vectors.
 
 ### Key Capabilities
 
@@ -63,6 +63,8 @@
 - OCI Python SDK
 - Valid OCI account with configured credentials
 - Appropriate IAM permissions for enumeration
+
+---
 
 ---
 
