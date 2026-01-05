@@ -23,7 +23,7 @@
 
 - **IAM Enumeration** - Users, groups, policies, and compartments
 - **Security Assessment** - Identify dangerous permissions and privilege escalation paths
-- **Resource Discovery** - Object Storage buckets and compute instances
+- **Resource Discovery** - Object Storage buckets, Vaults, and Secrets
 - **Detailed Reporting** - Export results to JSON for further analysis
 - **User-Friendly Output** - Color-coded results with clear severity indicators
 - **Fast & Efficient** - Optimized API calls with proper error handling
@@ -44,6 +44,9 @@
 | **Resource Discovery** | Find accessible Object Storage buckets across compartments |
 | **Object Listing** | List objects within specific buckets |
 | **File Download** | Download objects from Object Storage |
+| **Vault Enumeration** | Discover OCI Vaults across compartments |
+| **Secret Discovery** | List secrets stored in vaults |
+| **Secret Retrieval** | Extract and decode secret values from vaults |
 
 ### Security Analysis
 
