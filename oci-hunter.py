@@ -31,27 +31,20 @@ class Colors:
 def print_banner():
     banner = f"""
 {Colors.OKCYAN}
-    ╔══════════════════════════════════════════════════════════════╗
-    ║                                                              ║
-    ║     ██████╗  ██████╗██╗      ██╗ █████╗ ███╗   ███╗         ║
-    ║    ██╔═══██╗██╔════╝██║      ██║██╔══██╗████╗ ████║         ║
-    ║    ██║   ██║██║     ██║█████╗██║███████║██╔████╔██║         ║
-    ║    ██║   ██║██║     ██║╚════╝██║██╔══██║██║╚██╔╝██║         ║
-    ║    ╚██████╔╝╚██████╗██║      ██║██║  ██║██║ ╚═╝ ██║         ║
-    ║     ╚═════╝  ╚═════╝╚═╝      ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝         ║
-    ║       █████╗ ██╗   ██╗██████╗ ██╗████████╗                  ║
-    ║      ██╔══██╗██║   ██║██╔══██╗██║╚══██╔══╝                  ║
-    ║      ███████║██║   ██║██║  ██║██║   ██║                     ║
-    ║      ██╔══██║██║   ██║██║  ██║██║   ██║                     ║
-    ║      ██║  ██║╚██████╔╝██████╔╝██║   ██║                     ║
-    ║      ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝   ╚═╝                     ║
-    ║                                                              ║
-    ║           {Colors.WARNING}⚡ Oracle Cloud IAM Security Scanner ⚡{Colors.OKCYAN}          ║
-    ║                                                              ║
-    ║               {Colors.ENDC}Version: {Colors.BOLD}2.0.0{Colors.OKCYAN}  |  {Colors.ENDC}License: {Colors.BOLD}MIT{Colors.OKCYAN}            ║
-    ║          {Colors.ENDC}For Authorized Security Testing Only{Colors.OKCYAN}               ║
-    ║                                                              ║
-    ╚══════════════════════════════════════════════════════════════╝
+    ════════════════════════════════════════════════════════════
+    
+                      {Colors.BOLD}OCI-HUNTER v2.0.0{Colors.OKCYAN}
+    
+                {Colors.WARNING}Oracle Cloud Security Scanner{Colors.OKCYAN}
+    
+             {Colors.ENDC}Enumerate • Analyze • Assess • Report{Colors.OKCYAN}
+    
+                  {Colors.ENDC}IAM  |  Vaults  |  Storage{Colors.OKCYAN}
+    
+             {Colors.ENDC}For Authorized Security Testing Only{Colors.OKCYAN}
+                      {Colors.ENDC}License: MIT{Colors.OKCYAN}
+    
+    ════════════════════════════════════════════════════════════
 {Colors.ENDC}
     """
     print(banner)
