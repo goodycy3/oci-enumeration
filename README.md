@@ -73,8 +73,8 @@
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/oci-iam-audit.git
-cd oci-iam-audit
+git clone https://github.com/goodycy3/oci-hunter.git
+cd oci-hunter
 ```
 
 ### 2. Install Dependencies
@@ -105,7 +105,7 @@ key_file=~/.oci/oci_api_key.pem
 ### 4. Make Script Executable
 
 ```bash
-chmod +x oci-enumeration.py
+chmod +x oci-hunter.py
 ```
 
 ---
@@ -115,7 +115,7 @@ chmod +x oci-enumeration.py
 ### Basic Syntax
 
 ```bash
-python3 oci-enumeration.py [OPTIONS]
+python3 oci-hunter.py [OPTIONS]
 ```
 
 ### Command-Line Options
@@ -163,81 +163,81 @@ python3 oci-enumeration.py [OPTIONS]
 
 #### Check Current User Identity
 ```bash
-python3 oci-enumeration.py --user
+python3 oci-hunter.py --user
 ```
 
 #### List All Groups
 ```bash
-python3 oci-enumeration.py --groups
+python3 oci-hunter.py --groups
 ```
 
 #### Check User's Group Memberships
 ```bash
-python3 oci-enumeration.py --user-groups
+python3 oci-hunter.py --user-groups
 ```
 
 #### Enumerate IAM Policies
 ```bash
-python3 oci-enumeration.py --policies
+python3 oci-hunter.py --policies
 ```
 
 #### Enumerate all OCI Vaults
 ```bash
-python3 oci-enumeration.py --vaults
+python3 oci-hunter.py --vaults
 ```
 
 #### Enumerate secret in a vault
 ```bash
-python3 oci-enumeration.py --secrets --vault-id <OCI-VAULT-ID>
+python3 oci-hunter.py --secrets --vault-id <OCI-VAULT-ID>
 ```
 
 #### Retrieve a specific secret 
 ```bash
-python3 oci-enumeration.py --get-secret <OCID-SECRETE> 
+python3 oci-hunter.py --get-secret <OCID-SECRETE> 
 ```
 
 #### Download secret 
 ```bash
-python3 oci-enumeration.py --get-secret <OCID-SECRETE> --secret-output secret.txt
+python3 oci-hunter.py --get-secret <OCID-SECRETE> --secret-output secret.txt
 ```
 
 ### Advanced Usage
 
 #### Full Enumeration with Output
 ```bash
-python3 oci-enumeration.py --all --output full_audit_results.json
+python3 oci-hunter.py --all --output full_audit_results.json
 ```
 
 #### Security Assessment
 ```bash
-python3 oci-enumeration.py --policies --escalation
+python3 oci-hunter.py --policies --escalation
 ```
 
 #### Use Specific Profile
 ```bash
-python3 oci-enumeration.py --all --profile junior-dev --output dev_audit.json
+python3 oci-hunter.py --all --profile junior-dev --output dev_audit.json
 ```
 
 #### Discover and Access Object Storage
 ```bash
 # Find accessible buckets
-python3 oci-enumeration.py --resources
+python3 oci-hunter.py --resources
 
 # List objects in a specific bucket
-python3 oci-enumeration.py --list-bucket sensitive-data-bucket
+python3 oci-hunter.py --list-bucket sensitive-data-bucket
 
 # Download a specific object
-python3 oci-enumeration.py --download sensitive-data-bucket config.json ./config.json
+python3 oci-hunter.py --download sensitive-data-bucket config.json ./config.json
 ```
 
 #### Verbose Mode for Debugging
 ```bash
-python3 oci-enumeration.py --all --verbose
+python3 oci-hunter.py --all --verbose
 ```
 
 #### Silent Mode for Automation
 ```bash
-python3 oci-enumeration.py --all --no-banner --output scan_$(date +%Y%m%d).json
+python3 oci-hunter.py --all --no-banner --output scan_$(date +%Y%m%d).json
 ```
 
 ---
@@ -351,19 +351,19 @@ chmod 600 ~/.oci/*.pem
 #### No Groups Found
 ```bash
 # Try with verbose mode
-python3 oci-enumeration.py --groups --verbose
+python3 oci-hunter.py --groups --verbose
 
 # Try different profile
-python3 oci-enumeration.py --groups --profile admin
+python3 oci-hunter.py --groups --profile admin
 ```
 
 #### Cannot Access Bucket
 ```bash
 # First discover accessible buckets
-python3 oci-enumeration.py --resources
+python3 oci-hunter.py --resources
 
 # Use exact bucket name from results
-python3 oci-enumeration.py --list-bucket exact-bucket-name
+python3 oci-hunter.py --list-bucket exact-bucket-name
 ```
 
 ---
