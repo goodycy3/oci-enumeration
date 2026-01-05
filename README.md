@@ -146,7 +146,7 @@ python3 oci-hunter.py [OPTIONS]
 ```bash
 -l, --list-bucket BUCKET              List objects in specified bucket
 -d, --download BUCKET OBJECT DEST     Download object from bucket
---download-all BUCKET
+--download-all BUCKET                 Download all files in a bucket
 ```
 
 #### Output Options
@@ -201,7 +201,7 @@ python3 oci-hunter.py --get-secret <OCID-SECRETE>
 ```bash
 python3 oci-hunter.py --get-secret <OCID-SECRETE> --secret-output secret.txt
 ```
-#### Download secret 
+#### Download all secret in a vault 
 ```bash
 python3 oci-hunter.py --get-all-secrets --vault-id <VAULT-ID>
 ```
