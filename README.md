@@ -278,7 +278,7 @@ The tool highlights potentially dangerous permissions:
                   IAM  |  Vaults  |  Storage                                                                                  
                                                                                                                               
              For Authorized Security Testing Only                                                                             
-                      License: MIT                                                                                            
+                         License: MIT                                                                                            
                                                                                                                               
     ════════════════════════════════════════════════════════════                                                              
                                                                         
